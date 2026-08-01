@@ -428,51 +428,7 @@ export default function UsersPage() {
         </div>
       )}
 
-              {/* FIELD SEKOLAH - muncul untuk semua peran KECUALI super_admin */}
-              {!isSuperAdminTarget && (
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Sekolah <span className="text-rose-300">*</span></label>
-                  <div className="relative">
-                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                    <select
-                      value={form.School}
-                      onChange={(e) => setForm({ ...form, School: e.target.value })}
-                      required
-                      className="w-full pl-10 pr-3 py-2.5 text-sm glass-input"
-                    >
-                      {availableSchools.map((s) => (
-                        <option key={s} value={s}>{s === "all" ? "Semua Sekolah" : s}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <p className="text-[10px] text-slate-500 mt-1.5">
-                    {actorRole === "super_admin"
-                      ? "Pilih sekolah yang akan dikelola user ini."
-                      : `Anda hanya dapat membuat akun untuk sekolah ${actorSchool}.`}
-                  </p>
-                </div>
-              )}
-
-              {/* FIELD KELAS BINAAN - hanya untuk wali kelas */}
-              {isWaliTarget && (
-                <div>
-                  <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Kelas Binaan <span className="text-rose-300">*</span></label>
-                  <div className="relative"><GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500" /><textarea value={form.Classes} onChange={(e) => setForm({ ...form, Classes: e.target.value })} rows={2} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="XI IPA 1, XI IPA 2" /></div>
-                  <p className="text-[10px] text-slate-500 mt-1.5">Pisahkan beberapa kelas dengan koma. Wali kelas hanya akan melihat siswa &amp; kehadiran kelas‑kelas ini.</p>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-1">
-                <button type="submit" disabled={busy} className="glass-button flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50">{busy && <Loader2 className="w-4 h-4 animate-spin" />}{editing ? "Perbarui" : "Simpan"}</button>
-                <button type="button" onClick={closeForm} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-200 border border-white/15 hover:bg-white/10">Batal</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+             
 
 /* ===== Pemilih peran bertema ===== */
 const DISABLED_REASON: Partial<Record<Role, string>> = {
