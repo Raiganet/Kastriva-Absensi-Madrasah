@@ -47,7 +47,7 @@ export default function Sidebar() {
           <div className="flex items-center gap-3 mb-8 px-1">
             <img src="/android-chrome-192x192.png" alt="Kastriva" className="w-11 h-11 rounded-xl object-contain flex-shrink-0" />
             <div className="min-w-0">
-              <h1 className="font-bold text-sm text-white truncate">Kastriva Absensi Madrasah</h1>
+              <h1 className="font-bold text-[10px] text-white leading-tight">Kastriva<br/>Absensi Madrasah</h1>
               {meta ? (
                 <span className={`inline-flex items-center mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${meta.tone}`}>
                   {meta.label}{meta.readOnly ? " · baca‑saja" : ""}
