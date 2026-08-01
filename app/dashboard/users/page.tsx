@@ -295,7 +295,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-           {/* ===== MODAL ===== */}
+      {/* ===== MODAL ===== */}
       {showForm && (
         <div
           className="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
@@ -304,7 +304,7 @@ export default function UsersPage() {
           <div
             className="modal-panel glass-card w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()} /* Mencegah event mousedown tembus ke overlay */
+            onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white">{editing ? "Edit Akun" : "Tambah Akun"}</h2>
@@ -329,7 +329,7 @@ export default function UsersPage() {
                     onChange={(e) => setForm({ ...form, Email: e.target.value })}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
-                    autoComplete="off" /* Mencegah dropdown auto-complete browser memicu event aneh */
+                    autoComplete="off"
                     required
                     className="glass-input w-full pl-10 pr-3 py-2.5 text-sm"
                     placeholder="user@sekolah.sch.id"
@@ -427,8 +427,9 @@ export default function UsersPage() {
           </div>
         </div>
       )}
-
-             
+    </div>
+  );
+}
 
 /* ===== Pemilih peran bertema ===== */
 const DISABLED_REASON: Partial<Record<Role, string>> = {
