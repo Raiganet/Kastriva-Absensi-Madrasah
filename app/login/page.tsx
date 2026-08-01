@@ -47,7 +47,9 @@ function LoginForm() {
         <h1 className="text-3xl font-extrabold mb-2 text-center bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
           {mode === "login" ? "Selamat Datang" : "Buat Akun"}
         </h1>
-        <p className="text-sm text-slate-400 mb-7 text-center">Kastriva Absensi · Sistem Absensi Digital</p>
+        <p className="text-sm text-slate-400 mb-7 text-center">
+  Kastriva Absensi Madrasah · Sistem Absensi Digital
+</p>
 
         <form onSubmit={submit} className="space-y-5">
           {mode === "register" && (
