@@ -1,5 +1,4 @@
 "use client";
-import { clearSessionCache } from "@/components/session";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Plus, Edit, Trash2, X, Mail, Lock, Search, Loader2,
@@ -8,7 +7,7 @@ import {
   Check, X as XIcon, Info, ChevronDown,
 } from "lucide-react";
 import { useToast, useConfirm } from "@/components/ui";
-import { useSession } from "@/components/session";
+import { useSession, clearSessionCache } from "@/components/session";
 import {
   can, isReadOnly, ROLE_META, ROLE_OPTIONS, normalizeRole, SCHOOLS,
 } from "@/lib/rbac";
@@ -55,10 +54,9 @@ export default function UsersPage() {
   const actorRole = session?.role || "admin";
   const actorSchool = session?.school || "all";
 
-  // Sekolah yang boleh dipilih actor
   const availableSchools = useMemo(() => {
     if (actorRole === "super_admin") return ["all", ...SCHOOLS];
-    return [actorSchool]; // admin hanya bisa pilih sekolahnya sendiri
+    return [actorSchool];
   }, [actorRole, actorSchool]);
 
   const load = async () => {
@@ -66,7 +64,7 @@ export default function UsersPage() {
     catch { toast.error("Gagal memuat daftar user."); }
     finally { setLoading(false); }
   };
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => { load(); }, []);
 
   const filtered = useMemo(() => {
     const ql = q.trim().toLowerCase();
@@ -80,9 +78,7 @@ export default function UsersPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      const body = editing
-        ? { ...form, UserID: editing.UserID }
-        : form;
+      const body = editing ? { ...form, UserID: editing.UserID } : form;
       const res = await fetch("/api/users", {
         method: editing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,11 +86,17 @@ export default function UsersPage() {
       });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error || "Gagal menyimpan user."); return; }
-      toast.success(editing ? "Akun pengguna diperbarui." : "Akun pengguna ditambahkan.", editing ? "Diperbarui" : "Ditambahkan");
-     
-    clearSessionCache();  // Clear cache session
-    await load();         // Reload data users
-      closeForm(); load();
+      
+      toast.success(
+        editing ? "Akun pengguna diperbarui." : "Akun pengguna ditambahkan.",
+        editing ? "Diperbarui" : "Ditambahkan"
+      );
+      
+      // ✅ AUTO REFRESH SESSION & DATA
+      clearSessionCache();
+      await load();
+      closeForm();
+      
     } catch { toast.error("Tidak dapat terhubung ke server."); }
     finally { setBusy(false); }
   }
@@ -102,39 +104,44 @@ export default function UsersPage() {
   function openAdd() {
     setEditing(null);
     setForm({
-      Email: "",
-      Password: "",
-      Role: "admin",
-      Classes: "",
+      Email: "", Password: "", Role: "admin", Classes: "",
       School: actorRole === "super_admin" ? "all" : actorSchool,
     });
     setShowForm(true);
   }
+  
   function openEdit(u: UserRec) {
     setEditing(u);
     setForm({
-      Email: u.Email,
-      Password: "",
-      Role: normalizeRole(u.Role),
-      Classes: u.Classes || "",
-      School: u.School || "all",
+      Email: u.Email, Password: "", Role: normalizeRole(u.Role),
+      Classes: u.Classes || "", School: u.School || "all",
     });
     setShowForm(true);
   }
-  function closeForm() { setShowForm(false); setEditing(null); setForm({ Email: "", Password: "", Role: "admin", Classes: "", School: "all" }); }
+  
+  function closeForm() {
+    setShowForm(false);
+    setEditing(null);
+    setForm({ Email: "", Password: "", Role: "admin", Classes: "", School: "all" });
+  }
 
   async function remove(u: UserRec) {
     const ok = await confirm({
-      tone: "danger", title: "Hapus akun pengguna?",
-      message: `Akun ${u.Email} (${ROLE_META[normalizeRole(u.Role)].label}) akan dihapus permanen dari WebUsers. Tindakan ini tidak bisa dibatalkan.`,
+      tone: "danger",
+      title: "Hapus akun pengguna?",
+      message: `Akun ${u.Email} (${ROLE_META[normalizeRole(u.Role)].label}) akan dihapus permanen.`,
     });
     if (!ok) return;
+    
     try {
       const res = await fetch(`/api/users?id=${u.UserID}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error || "Gagal menghapus user."); return; }
+      
       toast.success("Akun pengguna dihapus.", "Dihapus");
-      load();
+      clearSessionCache();
+      await load();
+      
     } catch { toast.error("Tidak dapat terhubung ke server."); }
   }
 
@@ -146,19 +153,29 @@ export default function UsersPage() {
     <div className="space-y-6 animate-fadeIn">
       <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-indigo-300/80 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Akses &amp; Peran</p>
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-indigo-300/80 flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5" /> Akses &amp; Peran
+          </p>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">Pengguna &amp; Wewenang</h1>
-          <p className="text-sm text-slate-400 mt-1">{users.length} akun · {ROLE_OPTIONS.filter((o) => o.availableNow).length} peran dapat ditugaskan sekarang</p>
+          <p className="text-sm text-slate-400 mt-1">
+            {users.length} akun · {ROLE_OPTIONS.filter((o) => o.availableNow).length} peran dapat ditugaskan sekarang
+          </p>
         </div>
-        <button onClick={openAdd} className="glass-button px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah User</button>
+        <button onClick={openAdd} className="glass-button px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Tambah User
+        </button>
       </header>
 
       {/* ===== MATRIKS WEWENANG ===== */}
       <section className="glass-card p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-1">
           <div>
-            <h2 className="text-sm font-bold text-white flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-indigo-300" /> Matriks Wewenang Per Peran</h2>
-            <p className="text-[11px] text-slate-500 mt-1">Apa yang boleh dilakukan tiap peran, lengkap dengan penjelasannya. Wali kelas dibatasi pada kelas binaannya (kolom "Kelas Binaan").</p>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-indigo-300" /> Matriks Wewenang Per Peran
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Apa yang boleh dilakukan tiap peran. Wali kelas dibatasi pada kelas binaannya.
+            </p>
           </div>
         </div>
 
@@ -210,7 +227,6 @@ export default function UsersPage() {
                       </div>
                     );
                   })}
-
                   <div className="col-span-full flex items-start gap-2.5 pr-2">
                     <span className="w-8 flex-shrink-0 flex justify-start" aria-hidden="true">
                       <Info className="w-3.5 h-3.5 mt-0.5 text-slate-500" />
@@ -224,9 +240,21 @@ export default function UsersPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-4 pt-3 border-t border-white/10 text-[11px] text-slate-400">
-          <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-md grid place-items-center bg-emerald-500/15 text-emerald-300 border border-emerald-400/30"><Check className="w-3 h-3" /></span> penuh</span>
-          <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-md grid place-items-center bg-amber-500/15 text-amber-300 border border-amber-400/30"><Eye className="w-3 h-3" /></span> hanya melihat</span>
-          <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-md grid place-items-center bg-white/[0.03] text-slate-600 border border-white/10"><XIcon className="w-3 h-3" /></span> tidak ada</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-md grid place-items-center bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+              <Check className="w-3 h-3" />
+            </span> penuh
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-md grid place-items-center bg-amber-500/15 text-amber-300 border border-amber-400/30">
+              <Eye className="w-3 h-3" />
+            </span> hanya melihat
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-md grid place-items-center bg-white/[0.03] text-slate-600 border border-white/10">
+              <XIcon className="w-3 h-3" />
+            </span> tidak ada
+          </span>
         </div>
       </section>
 
@@ -283,16 +311,24 @@ export default function UsersPage() {
                         ? (cls ? <span className="text-sky-300 text-xs">{cls}</span> : <span className="text-amber-300/80 text-xs">belum diisi</span>)
                         : <span className="text-slate-500 text-xs">—</span>}
                     </td>
-                    <td className="p-3 text-slate-400 text-xs hidden sm:table-cell whitespace-nowrap">{u.CreatedAt ? new Date(u.CreatedAt).toLocaleDateString("id-ID") : "—"}</td>
+                    <td className="p-3 text-slate-400 text-xs hidden sm:table-cell whitespace-nowrap">
+                      {u.CreatedAt ? new Date(u.CreatedAt).toLocaleDateString("id-ID") : "—"}
+                    </td>
                     <td className="p-3 text-right whitespace-nowrap">
-                      <button onClick={() => openEdit(u)} className="text-amber-300 hover:text-amber-200 p-1.5 rounded-lg hover:bg-white/10 mr-1" aria-label="Edit"><Edit className="w-4 h-4" /></button>
-                      <button onClick={() => remove(u)} className="text-rose-300 hover:text-rose-200 p-1.5 rounded-lg hover:bg-rose-500/10" aria-label="Hapus"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => openEdit(u)} className="text-amber-300 hover:text-amber-200 p-1.5 rounded-lg hover:bg-white/10 mr-1" aria-label="Edit">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => remove(u)} className="text-rose-300 hover:text-rose-200 p-1.5 rounded-lg hover:bg-rose-500/10" aria-label="Hapus">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 );
               })}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="p-10 text-center text-slate-500 text-sm">{users.length === 0 ? "Belum ada user terdaftar." : "Tidak ada user sesuai filter."}</td></tr>
+                <tr><td colSpan={6} className="p-10 text-center text-slate-500 text-sm">
+                  {users.length === 0 ? "Belum ada user terdaftar." : "Tidak ada user sesuai filter."}
+                </td></tr>
               )}
             </tbody>
           </table>
@@ -301,32 +337,19 @@ export default function UsersPage() {
 
       {/* ===== MODAL ===== */}
       {showForm && (
-        <div
-          className="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-          onClick={closeForm}
-        >
-          <div
-            className="modal-panel glass-card w-full max-w-md p-6"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
+        <div className="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeForm}>
+          <div className="modal-panel glass-card w-full max-w-md p-6" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white">{editing ? "Edit Akun" : "Tambah Akun"}</h2>
-              <button type="button" onClick={closeForm} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10">
+              <button onClick={closeForm} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
-            <form
-              onSubmit={submit}
-              className="space-y-4"
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
+            <form onSubmit={submit} className="space-y-4" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Email</label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                   <input
                     type="email"
                     value={form.Email}
@@ -340,13 +363,12 @@ export default function UsersPage() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">
                   {editing ? "Password baru (kosongkan bila tidak diubah)" : "Password"}
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                   <input
                     type="password"
                     value={form.Password}
@@ -360,7 +382,6 @@ export default function UsersPage() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Peran</label>
                 <RoleSelect value={form.Role} onChange={(v) => setForm({ ...form, Role: v })} />
@@ -368,17 +389,13 @@ export default function UsersPage() {
                   <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                   <span>{chosenMeta.description}{isReadOnly(form.Role) ? " Perubahan data tidak tersedia untuk peran ini." : ""}</span>
                 </div>
-                {editing && editing.Role === "user" && (
-                  <p className="text-[10px] text-slate-500 mt-1.5">Akun lama bertipe "user" ditampilkan sebagai Administrator (wewenang setara).</p>
-                )}
               </div>
 
-              {/* FIELD SEKOLAH - muncul untuk semua peran KECUALI super_admin */}
               {!isSuperAdminTarget && (
                 <div>
                   <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Sekolah <span className="text-rose-300">*</span></label>
                   <div className="relative">
-                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500 pointer-events-none" />
+                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                     <select
                       value={form.School}
                       onChange={(e) => setForm({ ...form, School: e.target.value })}
@@ -392,29 +409,26 @@ export default function UsersPage() {
                     </select>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1.5">
-                    {actorRole === "super_admin"
-                      ? "Pilih sekolah yang akan dikelola user ini."
-                      : `Anda hanya dapat membuat akun untuk sekolah ${actorSchool}.`}
+                    {actorRole === "super_admin" ? "Pilih sekolah yang akan dikelola user ini." : `Anda hanya dapat membuat akun untuk sekolah ${actorSchool}.`}
                   </p>
                 </div>
               )}
 
-              {/* FIELD KELAS BINAAN - hanya untuk wali kelas */}
               {isWaliTarget && (
                 <div>
                   <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Kelas Binaan <span className="text-rose-300">*</span></label>
                   <div className="relative">
-                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500 pointer-events-none" />
-                    <textarea 
-                      value={form.Classes} 
-                      onChange={(e) => setForm({ ...form, Classes: e.target.value })} 
+                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <textarea
+                      value={form.Classes}
+                      onChange={(e) => setForm({ ...form, Classes: e.target.value })}
                       onClick={(e) => e.stopPropagation()}
-                      rows={2} 
-                      className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" 
-                      placeholder="XI IPA 1, XI IPA 2" 
+                      rows={2}
+                      className="glass-input w-full pl-10 pr-3 py-2.5 text-sm"
+                      placeholder="XI IPA 1, XI IPA 2"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-1.5">Pisahkan beberapa kelas dengan koma. Wali kelas hanya akan melihat siswa &amp; kehadiran kelas‑kelas ini.</p>
+                  <p className="text-[10px] text-slate-500 mt-1.5">Pisahkan beberapa kelas dengan koma.</p>
                 </div>
               )}
 
