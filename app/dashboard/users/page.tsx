@@ -295,23 +295,68 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* ===== MODAL ===== */}
+           {/* ===== MODAL ===== */}
       {showForm && (
-        <div className="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={closeForm}>
-          <div className="modal-panel glass-card w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={closeForm}
+        >
+          <div
+            className="modal-panel glass-card w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()} /* Mencegah event mousedown tembus ke overlay */
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white">{editing ? "Edit Akun" : "Tambah Akun"}</h2>
-              <button onClick={closeForm} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10"><X className="w-5 h-5" /></button>
+              <button type="button" onClick={closeForm} className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={submit} className="space-y-4">
+            
+            <form
+              onSubmit={submit}
+              className="space-y-4"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Email</label>
-                <div className="relative"><Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" /><input type="email" value={form.Email} onChange={(e) => setForm({ ...form, Email: e.target.value })} required className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="user@sekolah.sch.id" /></div>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                  <input
+                    type="email"
+                    value={form.Email}
+                    onChange={(e) => setForm({ ...form, Email: e.target.value })}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    autoComplete="off" /* Mencegah dropdown auto-complete browser memicu event aneh */
+                    required
+                    className="glass-input w-full pl-10 pr-3 py-2.5 text-sm"
+                    placeholder="user@sekolah.sch.id"
+                  />
+                </div>
               </div>
+
               <div>
-                <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">{editing ? "Password baru (kosongkan bila tidak diubah)" : "Password"}</label>
-                <div className="relative"><Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" /><input type="password" value={form.Password} onChange={(e) => setForm({ ...form, Password: e.target.value })} required={!editing} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder={editing ? "••••••••" : "Minimal 8 karakter"} /></div>
+                <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">
+                  {editing ? "Password baru (kosongkan bila tidak diubah)" : "Password"}
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                  <input
+                    type="password"
+                    value={form.Password}
+                    onChange={(e) => setForm({ ...form, Password: e.target.value })}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    autoComplete="new-password"
+                    required={!editing}
+                    className="glass-input w-full pl-10 pr-3 py-2.5 text-sm"
+                    placeholder={editing ? "••••••••" : "Minimal 8 karakter"}
+                  />
+                </div>
               </div>
+
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Peran</label>
                 <RoleSelect value={form.Role} onChange={(v) => setForm({ ...form, Role: v })} />
@@ -323,6 +368,65 @@ export default function UsersPage() {
                   <p className="text-[10px] text-slate-500 mt-1.5">Akun lama bertipe "user" ditampilkan sebagai Administrator (wewenang setara).</p>
                 )}
               </div>
+
+              {/* FIELD SEKOLAH - muncul untuk semua peran KECUALI super_admin */}
+              {!isSuperAdminTarget && (
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Sekolah <span className="text-rose-300">*</span></label>
+                  <div className="relative">
+                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500 pointer-events-none" />
+                    <select
+                      value={form.School}
+                      onChange={(e) => setForm({ ...form, School: e.target.value })}
+                      onClick={(e) => e.stopPropagation()}
+                      required
+                      className="w-full pl-10 pr-3 py-2.5 text-sm glass-input"
+                    >
+                      {availableSchools.map((s) => (
+                        <option key={s} value={s}>{s === "all" ? "Semua Sekolah" : s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1.5">
+                    {actorRole === "super_admin"
+                      ? "Pilih sekolah yang akan dikelola user ini."
+                      : `Anda hanya dapat membuat akun untuk sekolah ${actorSchool}.`}
+                  </p>
+                </div>
+              )}
+
+              {/* FIELD KELAS BINAAN - hanya untuk wali kelas */}
+              {isWaliTarget && (
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1.5 font-medium">Kelas Binaan <span className="text-rose-300">*</span></label>
+                  <div className="relative">
+                    <GraduationCap className="w-4 h-4 absolute left-3 top-3 text-slate-500 pointer-events-none" />
+                    <textarea 
+                      value={form.Classes} 
+                      onChange={(e) => setForm({ ...form, Classes: e.target.value })} 
+                      onClick={(e) => e.stopPropagation()}
+                      rows={2} 
+                      className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" 
+                      placeholder="XI IPA 1, XI IPA 2" 
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1.5">Pisahkan beberapa kelas dengan koma. Wali kelas hanya akan melihat siswa &amp; kehadiran kelas‑kelas ini.</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-1">
+                <button type="submit" disabled={busy} className="glass-button flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+                  {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {editing ? "Perbarui" : "Simpan"}
+                </button>
+                <button type="button" onClick={closeForm} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-200 border border-white/15 hover:bg-white/10">
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
               {/* FIELD SEKOLAH - muncul untuk semua peran KECUALI super_admin */}
               {!isSuperAdminTarget && (
