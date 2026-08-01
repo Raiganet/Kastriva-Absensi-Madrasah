@@ -5,8 +5,8 @@
 export type Role = "super_admin" | "admin" | "kepsek" | "wali_kelas";
 export const ROLES: readonly Role[] = ["super_admin", "admin", "kepsek", "wali_kelas"];
 
-export type School = "TK" | "SD" | "SMP" | "SMA" | "all";
-export const SCHOOLS: readonly School[] = ["TK", "SD", "SMP", "SMA"];
+export type School = "RA" | "MI" | "MTS" | "MA" | "all";
+export const SCHOOLS: readonly School[] = ["RA", "MI", "MTS", "MA"];
 
 export type Action =
   | "view_dashboard"
