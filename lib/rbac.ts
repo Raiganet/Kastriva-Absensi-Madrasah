@@ -60,7 +60,7 @@ export interface RoleMeta {
 export const ROLE_META: Record<Role, RoleMeta> = {
   super_admin: {
     label: "Super Admin", short: "SA", icon: "ShieldCheck",
-    description: "Akses penuh lintas sekolah (TK/SD/SMP/SMA); kelola admin per sekolah.",
+    description: "Akses penuh lintas sekolah (RA/MI/MTS/MA); kelola admin per sekolah.",
     tone: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-400/30",
     accent: "#d946ef", readOnly: false, level: 4,
   },
