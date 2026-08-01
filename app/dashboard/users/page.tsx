@@ -1,4 +1,5 @@
 "use client";
+import { clearSessionCache } from "@/components/session";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Plus, Edit, Trash2, X, Mail, Lock, Search, Loader2,
@@ -90,6 +91,9 @@ export default function UsersPage() {
       const data = await res.json();
       if (!res.ok) { toast.error(data.error || "Gagal menyimpan user."); return; }
       toast.success(editing ? "Akun pengguna diperbarui." : "Akun pengguna ditambahkan.", editing ? "Diperbarui" : "Ditambahkan");
+     
+    clearSessionCache();  // Clear cache session
+    await load();         // Reload data users
       closeForm(); load();
     } catch { toast.error("Tidak dapat terhubung ke server."); }
     finally { setBusy(false); }
