@@ -107,7 +107,8 @@ export function normalizeRole(raw: unknown): Role {
 
 export function normalizeSchool(raw: unknown): School {
   const s = (raw ?? "").toString().trim().toUpperCase();
-  if (s === "TK" || s === "SD" || s === "SMP" || s === "SMA") return s;
+  // Sesuaikan dengan tipe School yang baru (RA, MI, MTS, MA)
+  if (s === "RA" || s === "MI" || s === "MTS" || s === "MA") return s;
   return "all";
 }
 
