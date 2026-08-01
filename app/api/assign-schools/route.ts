@@ -21,22 +21,11 @@ function detectSchool(className: string): string {
   const c = className.toUpperCase().trim();
   if (!c) return "";
   
-  // TK
-  if (c.includes("TK")) return "TK";
+  if (c.includes("RA") || c.includes("TK")) return "RA";
+  if (/^[1-6]/.test(c) || c.includes("MI") || c.includes("SD")) return "MI";
+  if (/^(VII|VIII|IX|7|8|9)/.test(c) || c.includes("MTS") || c.includes("SMP")) return "MTS";
+  if (/^(X|XI|XII)/.test(c) || c.includes("MA") || c.includes("SMA")) return "MA";
   
-  // SD: kelas 1-6 saja (tanpa romawi)
-  if (/^[1-6]\s*[A-Z]?\s*$/.test(c)) return "SD";
-  if (/^SD\s/.test(c)) return "SD";
-  
-  // SMP: VII, VIII, IX atau 7, 8, 9
-  if (/^(VII|VIII|IX|7|8|9)\s/.test(c)) return "SMP";
-  if (/^SMP\s/.test(c)) return "SMP";
-  
-  // SMA: X, XI, XII atau mengandung IPA/IPS
-  if (/^(X|XI|XII)\s/.test(c)) return "SMA";
-  if (c.includes("IPA") || c.includes("IPS") || c.includes("BAHASA")) return "SMA";
-  
-  // Default: kosong (perlu manual)
   return "";
 }
 
