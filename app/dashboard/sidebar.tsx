@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, GraduationCap, ClipboardList,
   BarChart3, CreditCard, Settings, Menu, X, FileText, Monitor, ScrollText,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LogoutButton from "./logout-button";
 import { ThemeToggle } from "@/components/ui";
 import { useSession } from "@/components/session";
@@ -20,6 +20,19 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { data, loading } = useSession();
+  const [schoolName, setSchoolName] = useState("Sekolah");
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/settings", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        const name = j?.data?.school_name || j?.school_name;
+        if (alive && typeof name === "string" && name.trim()) setSchoolName(name.trim());
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
 
   const items = data ? data.nav : NAV_ITEMS; // fail-open ke daftar penuh bila sesi belum siap
   const meta = data?.meta;
@@ -44,16 +57,26 @@ export default function Sidebar() {
         }`}
       >
         <div className="p-5 flex flex-col h-full">
-          <div className="flex items-center gap-3 mb-8 px-1">
-            <img src="/kastriva-absensi-mark.svg" alt="Kastriva" className="w-11 h-11 rounded-xl object-contain flex-shrink-0" />
-            <div className="min-w-0">
-              <h1 className="font-bold text-[12px] text-white leading-tight">Kastriva-<br/><span className="text-sky-300">Absensi</span></h1>
+          <div className="mb-7 rounded-2xl border border-white/10 bg-white/[0.035] p-3.5 shadow-[0_10px_35px_rgba(2,8,23,0.18)]">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/20 border border-sky-400/15 grid place-items-center flex-shrink-0">
+                <img src="/kastriva-absensi-mark.svg" alt="Kastriva Absensi" className="w-10 h-10 object-contain" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[15px] font-extrabold tracking-[-0.02em] text-white leading-none whitespace-nowrap">
+                  Kastriva <span className="text-sky-300">Absensi</span>
+                </div>
+                <p className="mt-1.5 text-[10px] uppercase tracking-[0.14em] text-slate-500 font-semibold">QR Attendance System</p>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <p className="text-[11px] text-slate-300 font-semibold leading-snug truncate" title={schoolName}>{schoolName}</p>
               {meta ? (
-                <span className={`inline-flex items-center mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${meta.tone}`}>
-                  {meta.label}{meta.readOnly ? " · baca‑saja" : ""}
+                <span className={`inline-flex items-center mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${meta.tone}`}>
+                  {meta.label}{meta.readOnly ? " · baca-saja" : ""}
                 </span>
               ) : (
-                <p className="text-[11px] text-indigo-300 truncate">Admin Dashboard</p>
+                <p className="mt-1 text-[10px] text-indigo-300">Admin Dashboard</p>
               )}
             </div>
           </div>
@@ -87,7 +110,7 @@ export default function Sidebar() {
               <ThemeToggle />
               <LogoutButton />
             </div>
-            <p className="text-[11px] text-slate-500 px-1">Kastriva-Absensi · QR Attendance PWA</p>
+            <div className="px-1 leading-tight"><p className="text-[10px] text-slate-500">Powered by <span className="text-slate-400 font-semibold">Kastriva Absensi</span></p><p className="text-[9px] text-slate-600 mt-0.5">QR Attendance · PWA</p></div>
           </div>
         </div>
       </aside>
