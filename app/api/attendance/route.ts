@@ -24,7 +24,8 @@ export async function GET() {
   try {
     const session = await readSessionNode();
     if (!session) return NextResponse.json({ error: "Tidak terautentikasi." }, { status: 401 });
-    const [attendanceResult, studentsResult] = await Promise.all([gasGetAttendance(), gasGetStudents()]);
+    const school = session.school === "all" ? "" : session.school;
+    const [attendanceResult, studentsResult] = await Promise.all([gasGetAttendance(school), gasGetStudents(school)]);
     if (attendanceResult.success === false) {
       return NextResponse.json({ error: attendanceResult.message || "GAS gagal memuat absensi." }, { status: 502 });
     }
@@ -61,14 +62,15 @@ export async function POST(req: Request) {
     const notes = String(body.Notes ?? body.notes ?? "").trim();
     if (!studentId) return NextResponse.json({ error: "Student_ID wajib diisi." }, { status: 400 });
 
-    const studentsResult = await gasGetStudents();
+    const school = session.school === "all" ? "" : session.school;
+    const studentsResult = await gasGetStudents(school);
     const target = (studentsResult.data || []).map(mapGasStudent).find((row) => row.Student_ID === studentId);
     if (!target) return NextResponse.json({ error: "Siswa tidak ditemukan." }, { status: 404 });
     if (!visibleForSession(target, session)) {
       return NextResponse.json({ error: "Anda tidak dapat mencatat siswa dari sekolah/kelas lain." }, { status: 403 });
     }
 
-    const result = await gasRecordAttendance({ studentId, status, notes });
+    const result = await gasRecordAttendance({ studentId, status, notes, school });
     if (result.success === false) {
       return NextResponse.json(result, { status: result.duplicate ? 409 : 502 });
     }

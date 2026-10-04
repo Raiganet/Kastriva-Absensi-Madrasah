@@ -111,18 +111,19 @@ async function request<T>(
   }
 }
 
-export async function gasGetStudents(): Promise<GasResponse<GasStudent[]>> {
-  return request<GasResponse<GasStudent[]>>("getStudents");
+export async function gasGetStudents(school = ""): Promise<GasResponse<GasStudent[]>> {
+  return request<GasResponse<GasStudent[]>>("getStudents", { school });
 }
 
-export async function gasGetAttendance(): Promise<GasResponse<GasAttendance[]>> {
-  return request<GasResponse<GasAttendance[]>>("getAttendance");
+export async function gasGetAttendance(school = ""): Promise<GasResponse<GasAttendance[]>> {
+  return request<GasResponse<GasAttendance[]>>("getAttendance", { school });
 }
 
 export async function gasRecordAttendance(input: {
   studentId: string;
   status?: string;
   notes?: string;
+  school?: string;
 }): Promise<GasResponse<unknown>> {
   // GAS redirects can turn a POST into a GET in some runtimes. This action is
   // deliberately GET-compatible and the Android client uses the same path.
@@ -152,8 +153,8 @@ export async function gasImportStudents(rows: Array<Record<string, unknown>>): P
   return request<GasResponse<unknown>>("importStudents", { rows }, "POST");
 }
 
-export async function gasDeleteStudent(studentId: string): Promise<GasResponse<unknown>> {
-  return request<GasResponse<unknown>>("deleteStudent", { studentId }, "GET");
+export async function gasDeleteStudent(studentId: string, school = ""): Promise<GasResponse<unknown>> {
+  return request<GasResponse<unknown>>("deleteStudent", { studentId, school }, "GET");
 }
 
 export async function gasGetLogs(limit = 250): Promise<GasResponse<GasLog[]>> {

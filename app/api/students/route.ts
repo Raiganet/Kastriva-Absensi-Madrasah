@@ -26,7 +26,7 @@ export async function GET() {
   try {
     const session = await readSessionNode();
     if (!session) return NextResponse.json({ error: "Tidak terautentikasi." }, { status: 401 });
-    const result = await gasGetStudents();
+    const result = await gasGetStudents(session.school === "all" ? "" : session.school);
     if (result.success === false) {
       return NextResponse.json({ error: result.message || "GAS gagal memuat siswa." }, { status: 502 });
     }
@@ -76,7 +76,7 @@ export async function DELETE(req: Request) {
     if (!id) return NextResponse.json({ error: "NIS diperlukan." }, { status: 400 });
 
     // Check ownership before asking GAS to delete the row.
-    const result = await gasGetStudents();
+    const result = await gasGetStudents(session.school === "all" ? "" : session.school);
     if (result.success === false) {
       return NextResponse.json({ error: result.message || "GAS gagal memuat siswa." }, { status: 502 });
     }
@@ -86,7 +86,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Anda tidak dapat menghapus siswa dari sekolah/kelas lain." }, { status: 403 });
     }
 
-    const deleted = await gasDeleteStudent(id);
+    const deleted = await gasDeleteStudent(id, session.school === "all" ? "" : session.school);
     if (deleted.success === false) {
       return NextResponse.json({ error: deleted.message || "GAS gagal menghapus siswa." }, { status: 502 });
     }
