@@ -23,6 +23,7 @@ function visibleForSession(row: Record<string, string>, session: Awaited<ReturnT
 export async function GET() {
   try {
     const session = await readSessionNode();
+    if (!session) return NextResponse.json({ error: "Tidak terautentikasi." }, { status: 401 });
     const [attendanceResult, studentsResult] = await Promise.all([gasGetAttendance(), gasGetStudents()]);
     if (attendanceResult.success === false) {
       return NextResponse.json({ error: attendanceResult.message || "GAS gagal memuat absensi." }, { status: 502 });

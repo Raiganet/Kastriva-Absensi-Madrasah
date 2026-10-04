@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Edit, Trash2, X, Search, Loader2, GraduationCap, UserRound, Phone, MapPin, Hash, Info } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Plus, Edit, Trash2, X, Search, Loader2, GraduationCap, UserRound, Phone, MapPin, Hash, Info, Upload, Download } from "lucide-react";
 import { useToast, useConfirm } from "@/components/ui";
 import { useSession } from "@/components/session";
 import { Can } from "@/components/can";
@@ -24,6 +24,8 @@ export default function StudentsPage() {
   const [q, setQ] = useState("");
   const [fClass, setFClass] = useState("");
   const [limit, setLimit] = useState(50);
+  const [importing, setImporting] = useState(false);
+  const importRef = useRef<HTMLInputElement>(null);
 
   const waliMode = session?.scope === "class";
   const classPool = waliMode ? session!.classes : undefined; // undefined = semua (admin/kepsek)
@@ -56,6 +58,59 @@ export default function StudentsPage() {
     return list;
   }, [students, q, fClass, classPool]);
   const visible = filtered.slice(0, limit);
+
+
+  function downloadTemplate() {
+    const csv = "Student_ID,Student_Name,Class_Name,Academic_Year,Parent_Name,Parent_Phone,Address,School\n64765746,Haidar Raisul Fathin,XI IPA 1,2026/2027,Diky Hermansyah,082117119872,Alamat siswa,MA\n";
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob); const a = document.createElement("a");
+    a.href = url; a.download = "template-import-siswa-kastriva.csv"; a.click(); URL.revokeObjectURL(url);
+  }
+
+  function parseCsv(text: string): Record<string, string>[] {
+    const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).filter((x) => x.trim());
+    if (lines.length < 2) return [];
+    const split = (line: string) => { const out:string[]=[]; let cur="", q=false; for(let i=0;i<line.length;i++){ const c=line[i]; if(c==='"'){ if(q && line[i+1]==='"'){cur+='"';i++;} else q=!q; } else if(c===',' && !q){out.push(cur.trim());cur="";} else cur+=c;} out.push(cur.trim()); return out; };
+    const headers = split(lines[0]);
+    return lines.slice(1).map((line) => { const vals=split(line); const o:Record<string,string>={}; headers.forEach((h,i)=>o[h]=vals[i]||""); return o; });
+  }
+
+  async function loadXlsxLib(): Promise<any> {
+    const w = window as any;
+    if (w.XLSX) return w.XLSX;
+    await new Promise<void>((resolve, reject) => { const sc=document.createElement("script"); sc.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"; sc.onload=()=>resolve(); sc.onerror=()=>reject(new Error("Gagal memuat pembaca Excel")); document.head.appendChild(sc); });
+    return w.XLSX;
+  }
+
+  async function importFile(file?: File) {
+    if (!file) return;
+    setImporting(true);
+    try {
+      let rows: Record<string, any>[] = [];
+      if (file.name.toLowerCase().endsWith(".csv")) rows = parseCsv(await file.text());
+      else {
+        const XLSX = await loadXlsxLib();
+        const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "", raw: false });
+      }
+      const aliases: Record<string,string[]> = {
+        Student_ID:["Student_ID","NIS","NISN","studentId"], Student_Name:["Student_Name","Nama","Nama Siswa","studentName"],
+        Class_Name:["Class_Name","Kelas","className"], Academic_Year:["Academic_Year","Tahun Ajaran","academicYear"],
+        Parent_Name:["Parent_Name","Orang Tua","Nama Orang Tua","parentName"], Parent_Phone:["Parent_Phone","No HP","No. HP","parentPhone"],
+        Address:["Address","Alamat","address"], School:["School","Sekolah","school"]
+      };
+      const pick=(r:Record<string,any>, names:string[])=>{ for(const n of names) if(r[n]!==undefined && String(r[n]).trim()!=="") return String(r[n]).trim(); return ""; };
+      const normalized=rows.map((r)=>Object.fromEntries(Object.entries(aliases).map(([k,n])=>[k,pick(r,n)]))).filter((r:any)=>r.Student_ID || r.Student_Name);
+      if (!normalized.length) { toast.warning("File tidak berisi data siswa yang dikenali."); return; }
+      const ok = await confirm({ title:"Import data siswa?", message:`${normalized.length} baris akan diproses. NIS yang sudah ada akan diperbarui, NIS baru akan ditambahkan.` });
+      if (!ok) return;
+      const res=await fetch("/api/students/import",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({rows:normalized})});
+      const data=await res.json(); if(!res.ok){toast.error(data.error||"Import gagal.");return;}
+      toast.success(`Import selesai: ${data.created||0} baru, ${data.updated||0} diperbarui${data.rejected?.length ? `, ${data.rejected.length} ditolak` : ""}.`,"Import berhasil");
+      await load();
+    } catch(e) { toast.error(e instanceof Error ? e.message : "Gagal membaca file."); }
+    finally { setImporting(false); if(importRef.current) importRef.current.value=""; }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -104,7 +159,12 @@ export default function StudentsPage() {
           <p className="text-sm text-slate-400 mt-1">{students.length} siswa · {classOptions.length} kelas</p>
         </div>
        <Can action="manage_students">
-  <button onClick={openAdd} className="glass-button px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Siswa</button>
+  <div className="flex flex-wrap gap-2">
+    <button onClick={downloadTemplate} className="px-3 py-2.5 rounded-xl text-sm font-semibold border border-white/15 hover:bg-white/10 text-slate-200 flex items-center gap-2"><Download className="w-4 h-4" /> Template</button>
+    <button onClick={()=>importRef.current?.click()} disabled={importing} className="px-3 py-2.5 rounded-xl text-sm font-semibold border border-cyan-400/30 bg-cyan-500/10 hover:bg-cyan-500/15 text-cyan-200 flex items-center gap-2 disabled:opacity-50">{importing?<Loader2 className="w-4 h-4 animate-spin"/>:<Upload className="w-4 h-4"/>} Import Excel/CSV</button>
+    <input ref={importRef} type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={(e)=>importFile(e.target.files?.[0])} />
+    <button onClick={openAdd} className="glass-button px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><Plus className="w-4 h-4" /> Tambah Siswa</button>
+  </div>
 </Can>
       </header>
 

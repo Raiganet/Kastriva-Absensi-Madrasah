@@ -25,6 +25,7 @@ function visibleForSession(row: Record<string, string>, session: Awaited<ReturnT
 export async function GET() {
   try {
     const session = await readSessionNode();
+    if (!session) return NextResponse.json({ error: "Tidak terautentikasi." }, { status: 401 });
     const result = await gasGetStudents();
     if (result.success === false) {
       return NextResponse.json({ error: result.message || "GAS gagal memuat siswa." }, { status: 502 });

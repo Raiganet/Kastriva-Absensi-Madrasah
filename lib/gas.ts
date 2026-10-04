@@ -139,6 +139,11 @@ export async function gasSaveStudent(input: {
   return request<GasResponse<unknown>>("saveStudent", input, method);
 }
 
+
+export async function gasImportStudents(rows: Array<Record<string, unknown>>): Promise<GasResponse<unknown>> {
+  return request<GasResponse<unknown>>("importStudents", { rows }, "POST");
+}
+
 export async function gasDeleteStudent(studentId: string): Promise<GasResponse<unknown>> {
   return request<GasResponse<unknown>>("deleteStudent", { studentId }, "GET");
 }

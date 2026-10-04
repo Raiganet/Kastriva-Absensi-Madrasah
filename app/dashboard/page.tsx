@@ -71,6 +71,8 @@ export default function DashboardPage() {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [live, setLive] = useState(true);
 
   const [fStatus, setFStatus] = useState<"all" | Cat>("all");
   const [fClass, setFClass] = useState("");
@@ -78,28 +80,33 @@ export default function DashboardPage() {
   const [limit, setLimit] = useState(50);
 
 useEffect(() => {
-    (async () => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    async function load(silent = false) {
       try {
+        if (!silent) setLoading(true);
         const [sRes, aRes, stRes] = await Promise.all([
-          fetch("/api/students"),
-          fetch("/api/attendance"),
-          fetch("/api/settings"),
+          fetch("/api/students", { cache: "no-store" }),
+          fetch("/api/attendance", { cache: "no-store" }),
+          fetch("/api/settings", { cache: "no-store" }),
         ]);
-        const sData = await sRes.json();
-        const aData = await aRes.json();
-        const stData = await stRes.json();
-        
-        // Defensive: pastikan selalu array
+        const [sData, aData, stData] = await Promise.all([sRes.json(), aRes.json(), stRes.json()]);
+        if (cancelled) return;
         setStudents(Array.isArray(sData) ? sData : []);
         setAttendance(Array.isArray(aData) ? aData : []);
-        setSettings(stData && typeof stData === "object" && !Array.isArray(stData) ? stData : {});
-      } catch (e) { 
-        setErr(e instanceof Error ? e.message : "Gagal memuat data."); 
-      } finally { 
-        setLoading(false); 
-      }
-    })();
-  }, []);
+        const cfg = stData && typeof stData === "object" && !Array.isArray(stData) ? stData : {};
+        setSettings(cfg);
+        setLastUpdated(new Date());
+        setErr("");
+        const sec = Math.max(10, Math.min(60, Number(cfg.live_refresh_seconds || 15)));
+        if (timer) clearInterval(timer);
+        if (live) timer = setInterval(() => load(true), sec * 1000);
+      } catch (e) { if (!cancelled) setErr(e instanceof Error ? e.message : "Gagal memuat data."); }
+      finally { if (!cancelled) setLoading(false); }
+    }
+    load();
+    return () => { cancelled = true; if (timer) clearInterval(timer); };
+  }, [live]);
 
   useEffect(() => { setLimit(50); }, [fStatus, fClass, q]);
 
@@ -138,6 +145,7 @@ useEffect(() => {
 
   const total = rows.length;
   const scanToday = useMemo(() => attendance.filter((a) => (a.Date_String || "") === today).length, [attendance, today]);
+  const lateToday = useMemo(() => attendance.filter((a) => (a.Date_String || "") === today && (a.Status || "").toLowerCase().includes("terlambat")).length, [attendance, today]);
 
   const classStats = useMemo(() => {
     const m: Record<string, ClsStat> = {};
@@ -189,6 +197,14 @@ useEffect(() => {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{settings.school_name || "Kastriva Absensi"}</h1>
           <p className="text-sm text-slate-400 mt-1 flex items-center gap-2"><CalendarDays className="w-4 h-4 text-indigo-300" /> {todayIndo()}</p>
+        </div>
+        <div className="flex items-center gap-2 text-[11px]">
+          <span className={`px-2.5 py-1.5 rounded-full border ${live ? "text-emerald-300 border-emerald-400/30 bg-emerald-500/10" : "text-slate-400 border-white/10 bg-white/5"}`}>
+            <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${live ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
+            {live ? "LIVE" : "Dijeda"}
+          </span>
+          <button onClick={() => setLive((v) => !v)} className="px-2.5 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 text-slate-300">{live ? "Jeda" : "Aktifkan"}</button>
+          {lastUpdated && <span className="text-slate-500 hidden sm:inline">Update {lastUpdated.toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit", second:"2-digit" })}</span>}
         </div>
       </header>
 
@@ -270,6 +286,7 @@ useEffect(() => {
         {CAT_ORDER.map((c) => (
           <span key={c} className="flex items-center gap-1.5 text-slate-300"><i className={`w-2.5 h-2.5 rounded-full ${CAT_META[c].dot}`} /> {CAT_META[c].label}</span>
         ))}
+        <span className="text-amber-300/90">Terlambat: <span className="font-semibold">{lateToday}</span></span>
         <span className="text-slate-500 ml-auto">Total scan hari ini: <span className="text-slate-200 font-semibold">{scanToday}</span></span>
       </div>
 

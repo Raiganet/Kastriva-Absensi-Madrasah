@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Save, Upload, Trash2, Palette, Building2, Globe, UserCog, Sparkles, Loader2 } from "lucide-react";
+import { Save, Upload, Trash2, Palette, Building2, Globe, UserCog, Sparkles, Loader2, Clock3, Radio } from "lucide-react";
 import { useToast } from "@/components/ui";
 
 const THEMES = [
@@ -113,6 +113,18 @@ export default function SettingsPage() {
               <Field label="Website Sekolah" icon={<Globe className="w-4 h-4" />} full>
                 <input value={settings.school_website || ""} onChange={(e) => setSettings({ ...settings, school_website: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="https://ma-imtaq.sch.id" />
               </Field>
+            </div>
+          </section>
+
+
+          <section className="glass-card p-5 sm:p-6">
+            <h2 className="text-sm font-bold text-white flex items-center gap-2 mb-1"><Clock3 className="w-4 h-4 text-cyan-300" /> Jam & Otomasi Absensi</h2>
+            <p className="text-[11px] text-slate-500 mb-4">Dipakai mode scan otomatis untuk menentukan Masuk, Terlambat, dan Pulang.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Field label="Jam Masuk" icon={<Clock3 className="w-4 h-4" />}><input type="time" value={settings.school_start_time || "07:00"} onChange={(e)=>setSettings({...settings, school_start_time:e.target.value})} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" /></Field>
+              <Field label="Batas Terlambat" icon={<Clock3 className="w-4 h-4" />}><input type="time" value={settings.late_after || "07:15"} onChange={(e)=>setSettings({...settings, late_after:e.target.value})} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" /></Field>
+              <Field label="Jam Pulang" icon={<Clock3 className="w-4 h-4" />}><input type="time" value={settings.school_end_time || "14:00"} onChange={(e)=>setSettings({...settings, school_end_time:e.target.value})} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" /></Field>
+              <Field label="Refresh Live Dashboard (detik)" icon={<Radio className="w-4 h-4" />} full><input type="number" min="10" max="60" value={settings.live_refresh_seconds || "15"} onChange={(e)=>setSettings({...settings, live_refresh_seconds:e.target.value})} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" /></Field>
             </div>
           </section>
 
