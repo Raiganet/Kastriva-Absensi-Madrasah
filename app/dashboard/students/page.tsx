@@ -61,7 +61,10 @@ export default function StudentsPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch("/api/students", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      // Photo upload is not part of this form. Omitting it lets GAS preserve
+      // an existing photo while keeping ordinary edits redirect-safe.
+      const { Photo: _photo, ...studentPayload } = form;
+      const res = await fetch("/api/students", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(studentPayload) });
       const data = await res.json();
       if (!res.ok) { toast.error(data.error || "Gagal menyimpan siswa."); return; }
       toast.success(editing ? "Data siswa diperbarui." : "Siswa baru ditambahkan.", editing ? "Diperbarui" : "Ditambahkan");
