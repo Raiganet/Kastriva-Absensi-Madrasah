@@ -8,7 +8,7 @@ export default function NotFound() {
       <Reveal className="w-full max-w-lg text-center">
         <div className="flex justify-center mb-6">
           <div className="animate-floaty w-16 h-16 rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/30">
-            <img src="/android-chrome-192x192.png" alt="Kastriva" className="w-full h-full object-contain" />
+            <img src="/kastriva-absensi-mark.svg" alt="Kastriva" className="w-full h-full object-contain" />
           </div>
         </div>
         <p className="font-display text-7xl sm:text-8xl font-extrabold text-white/90 tabular leading-none">404</p>

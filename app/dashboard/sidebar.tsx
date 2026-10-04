@@ -45,9 +45,9 @@ export default function Sidebar() {
       >
         <div className="p-5 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-8 px-1">
-            <img src="/android-chrome-192x192.png" alt="Kastriva" className="w-11 h-11 rounded-xl object-contain flex-shrink-0" />
+            <img src="/kastriva-absensi-mark.svg" alt="Kastriva" className="w-11 h-11 rounded-xl object-contain flex-shrink-0" />
             <div className="min-w-0">
-              <h1 className="font-bold text-[12px] text-white leading-tight">Kastriva<br/>Absensi Madrasah</h1>
+              <h1 className="font-bold text-[12px] text-white leading-tight">Kastriva-<br/><span className="text-sky-300">Absensi</span></h1>
               {meta ? (
                 <span className={`inline-flex items-center mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${meta.tone}`}>
                   {meta.label}{meta.readOnly ? " · baca‑saja" : ""}
@@ -87,7 +87,7 @@ export default function Sidebar() {
               <ThemeToggle />
               <LogoutButton />
             </div>
-            <p className="text-[11px] text-slate-500 px-1">Kastriva Absensi · PWA</p>
+            <p className="text-[11px] text-slate-500 px-1">Kastriva-Absensi · QR Attendance PWA</p>
           </div>
         </div>
       </aside>

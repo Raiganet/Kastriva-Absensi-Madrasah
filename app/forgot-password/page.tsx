@@ -79,7 +79,7 @@ function ForgotPasswordForm() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-2xl">
         <div className="flex justify-center mb-3">
-          <img src="/android-chrome-192x192.png" alt="Kastriva Absensi" className="w-16 h-16 rounded-2xl object-contain" />
+          <img src="/kastriva-absensi-mark.svg" alt="Kastriva Absensi" className="w-16 h-16 rounded-2xl object-contain" />
         </div>
         <h1 className="text-xl font-bold mb-1 text-center">
           {step === "email" ? "Lupa Password" : step === "otp" ? "Masukkan Kode OTP" : "Berhasil!"}

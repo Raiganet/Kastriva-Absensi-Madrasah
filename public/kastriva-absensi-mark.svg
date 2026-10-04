@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Kastriva Absensi">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B2A67"/><stop offset="1" stop-color="#071A3C"/></linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22D3EE"/><stop offset="0.48" stop-color="#0D6EFD"/><stop offset="1" stop-color="#2541D8"/></linearGradient>
+    <linearGradient id="check" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ADE80"/><stop offset="1" stop-color="#16A34A"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#00153C" flood-opacity=".38"/></filter>
+  </defs>
+  <rect x="42" y="42" width="940" height="940" rx="210" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <path d="M512 125 820 251v220c0 201-121 342-308 427C325 813 204 672 204 471V251L512 125Z" fill="url(#shield)"/>
+    <path d="M512 203 746 299v164c0 148-84 258-234 334-150-76-234-186-234-334V299l234-96Z" fill="#F8FCFF"/>
+    <g fill="#0B4EC9">
+      <rect x="344" y="353" width="114" height="114" rx="18"/><rect x="566" y="353" width="114" height="114" rx="18"/><rect x="344" y="575" width="114" height="114" rx="18"/>
+      <rect x="371" y="380" width="60" height="60" rx="8" fill="#F8FCFF"/><rect x="593" y="380" width="60" height="60" rx="8" fill="#F8FCFF"/><rect x="371" y="602" width="60" height="60" rx="8" fill="#F8FCFF"/>
+      <rect x="492" y="354" width="42" height="42" rx="8"/><rect x="492" y="408" width="42" height="42" rx="8"/><rect x="492" y="482" width="42" height="42" rx="8"/>
+      <rect x="548" y="494" width="42" height="42" rx="8"/><rect x="603" y="494" width="42" height="42" rx="8"/><rect x="658" y="494" width="42" height="42" rx="8"/>
+      <rect x="492" y="548" width="42" height="42" rx="8"/><rect x="548" y="548" width="42" height="42" rx="8"/><rect x="603" y="603" width="42" height="42" rx="8"/>
+      <rect x="658" y="603" width="42" height="42" rx="8"/><rect x="548" y="658" width="42" height="42" rx="8"/>
+    </g>
+    <path d="M204 664c130 77 259 72 373 7 89-51 162-125 240-224-39 152-120 277-244 356-115 74-256 62-369-36v-103Z" fill="#0AB4D8" opacity=".96"/>
+    <path d="M437 675 532 770 808 458" fill="none" stroke="url(#check)" stroke-width="74" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M437 675 532 770 808 458" fill="none" stroke="#E8FFF0" stroke-opacity=".35" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -6,8 +6,8 @@ import { ToastProvider, ConfirmProvider } from "@/components/ui";
 import { SessionProvider } from "@/components/session";
 
 export const metadata: Metadata = {
-  title: "Kastriva Absensi",
-  description: "Sistem Absensi Digital dengan QR Code",
+  title: "Kastriva-Absensi",
+  description: "Kastriva-Absensi · Absensi Digital Berbasis QR",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-touch-icon.png",
   },
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "Kastriva Absensi" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Kastriva-Absensi" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#6366f1",
+  themeColor: "#0D6EFD",
 };
 
 const THEME_INIT = `(function(){try{var t=localStorage.getItem('kastriva-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;

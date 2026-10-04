@@ -42,13 +42,13 @@ function LoginForm() {
       <div className="fixed top-4 right-4 z-30"><ThemeToggle /></div>
       <div className="glass-card w-full max-w-md p-7 sm:p-9 animate-fadeIn">
         <div className="flex justify-center mb-5">
-          <img src="/android-chrome-192x192.png" alt="Kastriva Absensi" className="w-20 h-20 rounded-2xl object-contain drop-shadow-2xl" />
+          <img src="/kastriva-absensi-mark.svg" alt="Kastriva Absensi" className="w-20 h-20 rounded-2xl object-contain drop-shadow-2xl" />
         </div>
         <h1 className="text-3xl font-extrabold mb-2 text-center bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
           {mode === "login" ? "Selamat Datang" : "Buat Akun"}
         </h1>
         <p className="text-sm text-slate-400 mb-7 text-center">
-  Kastriva Absensi Madrasah · Sistem Absensi Digital
+  Kastriva-Absensi · Absensi Digital Berbasis QR
 </p>
 
         <form onSubmit={submit} className="space-y-5">
