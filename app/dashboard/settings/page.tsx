@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Save, Upload, Trash2, Palette, Building2, Globe, UserCog, Sparkles, Loader2, Clock3, Radio, DatabaseBackup, ExternalLink } from "lucide-react";
+import { Save, Upload, Trash2, Palette, Building2, Globe, UserCog, Sparkles, Loader2, Clock3, Radio, DatabaseBackup, ExternalLink, MapPin, Phone, Mail, Hash } from "lucide-react";
 import { useToast } from "@/components/ui";
 
 const THEMES = [
@@ -124,6 +124,18 @@ export default function SettingsPage() {
               <Field label="Tagline / Motto" icon={<Sparkles className="w-4 h-4" />} full>
                 <input value={settings.school_tagline || ""} onChange={(e) => setSettings({ ...settings, school_tagline: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="Selalu di depan membangun bangsa" />
               </Field>
+              <Field label="Alamat Sekolah" icon={<MapPin className="w-4 h-4" />} full>
+                <textarea value={settings.school_address || ""} onChange={(e) => setSettings({ ...settings, school_address: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm min-h-20 resize-y" placeholder="Jl. Pendidikan No. 1, Kecamatan..., Kabupaten..." />
+              </Field>
+              <Field label="Telepon Sekolah" icon={<Phone className="w-4 h-4" />}>
+                <input value={settings.school_phone || ""} onChange={(e) => setSettings({ ...settings, school_phone: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="0267-xxxxxxx / 08xx" />
+              </Field>
+              <Field label="NPSN" icon={<Hash className="w-4 h-4" />}>
+                <input value={settings.school_npsn || ""} onChange={(e) => setSettings({ ...settings, school_npsn: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="12345678" />
+              </Field>
+              <Field label="Email Sekolah" icon={<Mail className="w-4 h-4" />} full>
+                <input type="email" value={settings.school_email || ""} onChange={(e) => setSettings({ ...settings, school_email: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="admin@sekolah.sch.id" />
+              </Field>
               <Field label="Website Sekolah" icon={<Globe className="w-4 h-4" />} full>
                 <input value={settings.school_website || ""} onChange={(e) => setSettings({ ...settings, school_website: e.target.value })} className="glass-input w-full pl-10 pr-3 py-2.5 text-sm" placeholder="https://ma-imtaq.sch.id" />
               </Field>
@@ -219,6 +231,10 @@ export default function SettingsPage() {
             <div className="mt-4 space-y-3 text-sm">
               <PreviewRow icon={<Building2 className="w-4 h-4 text-indigo-300" />} label="Sekolah" value={settings.school_name || "—"} />
               <PreviewRow icon={<UserCog className="w-4 h-4 text-indigo-300" />} label="Kepala Sekolah" value={settings.principal_name || "—"} />
+              <PreviewRow icon={<MapPin className="w-4 h-4 text-indigo-300" />} label="Alamat" value={settings.school_address || "—"} />
+              <PreviewRow icon={<Phone className="w-4 h-4 text-indigo-300" />} label="Telepon" value={settings.school_phone || "—"} mono />
+              <PreviewRow icon={<Mail className="w-4 h-4 text-indigo-300" />} label="Email" value={settings.school_email || "—"} />
+              <PreviewRow icon={<Hash className="w-4 h-4 text-indigo-300" />} label="NPSN" value={settings.school_npsn || "—"} mono />
               <PreviewRow icon={<Globe className="w-4 h-4 text-indigo-300" />} label="Website" value={settings.school_website || "—"} mono />
             </div>
             <p className="text-[10px] text-slate-500 mt-4 leading-relaxed">Perubahan di sini hanya pratinjau. Tekan <span className="text-slate-300 font-semibold">Simpan Pengaturan</span> untuk menulis ke Spreadsheet.</p>
